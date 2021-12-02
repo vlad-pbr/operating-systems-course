@@ -1,7 +1,9 @@
+// comp.c
+
 #include <unistd.h>
 #include <fcntl.h>
 
-#define BUFFER_SIZE 100
+#define BUFFER_SIZE 50
 
 int main() {
     
