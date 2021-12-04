@@ -1,0 +1,3 @@
+./data/students
+./data/input.txt
+./data/output.txt
