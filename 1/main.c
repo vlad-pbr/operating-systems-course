@@ -3,13 +3,11 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <dirent.h>
-#include<sys/wait.h>
-
-#include <stdio.h>
+#include <sys/wait.h>
 
 #define BUFFER_LEN 50
 
-int main(int argc, char *argv[]) {
+void main(int argc, char *argv[]) {
     
     // define vars
     char byte[1];
@@ -17,6 +15,7 @@ int main(int argc, char *argv[]) {
     int config_fd;
     char config_lines[3][BUFFER_LEN+1];
     int nbytes;
+    int results_fd;
     DIR* students_dir;
     struct dirent* entry;
     char *student_file_names[3] = { "main.c", "main", "output.txt" };
@@ -26,6 +25,8 @@ int main(int argc, char *argv[]) {
     int output_fd;
     int rc;
     pid_t pid;
+    int size;
+    int pipe_fds[2];
     
     // open config file
     config_fd = open(argv[1], O_RDONLY);
@@ -42,6 +43,9 @@ int main(int argc, char *argv[]) {
 
         config_lines[i][byte_index-1] = '\0';
     }
+
+    // open / create results csv
+    results_fd = open("results.csv", O_WRONLY | O_CREAT, 0644);
 
     // iterate students
     students_dir = opendir(config_lines[0]);
@@ -83,7 +87,7 @@ int main(int argc, char *argv[]) {
 
                 // compile student's program
                 execlp("gcc", "gcc", student_files[0], "-o", student_files[1], (char *)NULL);
-                return 0;
+                return;
 
             }
 
@@ -106,18 +110,61 @@ int main(int argc, char *argv[]) {
                 // run student's program
                 execlp(student_files[1], student_files[1], (char *)NULL);
 
-                return 0;
+                return;
             }
 
             // wait on child to run student's program
             wait(NULL);
 
-            // TODO compare answers
+            // set-up pipe
+            pipe(pipe_fds);
 
+            // student output file path to pipe
+            for (size = 0; student_files[2][size] != '\0'; size++ );
+            write(pipe_fds[1], student_files[2], size);
+            write(pipe_fds[1], "\n", 1);
+
+            // desired output file path to pipe
+            for (size = 0; config_lines[2][size] != '\0'; size++ );
+            write(pipe_fds[1], config_lines[2], size);
+            write(pipe_fds[1], "\n", 1);
+
+            // close write end of pipe
+            close(pipe_fds[1]);
+
+            // child
+            if ((pid = fork()) == 0) {
+
+                // set reading end of pipe as stdin
+                dup2(pipe_fds[0], 0);
+                close(pipe_fds[0]);
+                close(pipe_fds[1]);
+
+                // run comparison
+                execlp("./comp.out", "./comp.out", (char *)NULL );
+
+                return;
+            }
+
+            // wait on child process to exit and read status code
+            waitpid(pid, &rc, 0);
+            close(pipe_fds[0]);
+
+            // write student name
+            for (size = 0; entry->d_name[size] != '\0'; size++);
+            write(results_fd, entry->d_name, size);
+
+            // write result
+            if (WEXITSTATUS(rc) == 2) {
+                write(results_fd, ",100\n", 5);
+            } else {
+                write(results_fd, ",0\n", 3);
+            }
         }
 
     }
 
-    // close students dir
+    // close files
     closedir(students_dir);
+    close(results_fd);
 }
