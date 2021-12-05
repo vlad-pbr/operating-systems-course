@@ -13,6 +13,7 @@ void main(int argc, char *argv[]) {
     char byte[1];
     int byte_index;
     int config_fd;
+    int j;
     char config_lines[3][BUFFER_LEN+1];
     int nbytes;
     int results_fd;
@@ -55,8 +56,7 @@ void main(int argc, char *argv[]) {
         if (entry->d_name[0] != '.') {
 
             // append students dir path
-            int j = 0;
-            for (; config_lines[0][j] != '\0'; j++) {
+            for (j = 0; config_lines[0][j] != '\0'; j++) {
                 student_path[j] = config_lines[0][j];
             }
             student_path[j++] = '/';
