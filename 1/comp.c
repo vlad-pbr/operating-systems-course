@@ -3,12 +3,15 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#define BUFFER_SIZE 50
+#include <stdio.h>
+
+#define BUFFER_SIZE 100
 
 int main() {
     
     // define vars
     char buffer[BUFFER_SIZE+1];
+    char byte[1];
     int nbytes;
     int fds[2];
     int fd_buffers[2][1];
@@ -20,7 +23,12 @@ int main() {
         
         // read path from stdin
         // assuming path is valid
-        nbytes = read(0, buffer, BUFFER_SIZE);
+        for(nbytes = 0, byte[0] = 0; byte[0] != '\n'; nbytes++) {
+            read(0, byte, 1);
+            if (byte[0] != '\n') {
+                buffer[nbytes] = byte[0];
+            }
+        }
         buffer[nbytes-1] = '\0';
 
         // open file for reading
