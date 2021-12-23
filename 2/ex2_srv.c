@@ -70,12 +70,18 @@ void request_handler(int sig) {
             exit_with_error();
         }
 
+        write(1, "end of stage 4\n", 16);
+
         // combine client output file name
         integer_to_ascii(client_pid, client_pid_postfix);
 
-        // write answer to client
+        // open answer file
         answer = SOLVE(first_number, second_number, action);
         client_output_file_fd = open(client_output_file_name, O_WRONLY | O_CREAT, 0644);
+        
+        write(1, "end of stage 5\n", 16);
+
+        // write to answer file
         write(client_output_file_fd, (const void*)(&answer), sizeof(int));
         if ( close(client_output_file_fd) == -1 ) {
             exit_with_error();
@@ -86,8 +92,12 @@ void request_handler(int sig) {
             exit_with_error();
         }
 
+        write(1, "end of stage 6\n", 16);
+
         _exit(0);
     }
+
+    write(1, "end of stage 3\n", 16);
 
 }
 
@@ -109,6 +119,8 @@ void main() {
 
     // ignore SIGCHLD so children are silently reaped
     signal(SIGCHLD, SIG_IGN);
+
+    write(1, "end of stage 1\n", 16);
 
     // set timeout
     alarm(60);

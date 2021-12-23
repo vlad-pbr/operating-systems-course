@@ -82,6 +82,8 @@ void response_handler(int sig) {
         exit_with_error();
     }
 
+    write(1, "end of stage 7\n", 16);
+
     _exit(0);
 }
 
@@ -149,6 +151,8 @@ void main(int argc, char **argv) {
     if ( kill(ascii_to_integer(argv[1]), SIGUSR1) == -1) {
         exit_with_error();
     };
+
+    write(1, "end of stage 2\n", 16);
 
     // set timeout
     alarm(30);
