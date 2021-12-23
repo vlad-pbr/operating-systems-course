@@ -78,8 +78,9 @@ void response_handler(int sig) {
     write(1, "\n", 1);
 
     // close and delete
-    close(server_response_file_fd);
-    unlink(server_response_file_name);
+    if ( close(server_response_file_fd) == -1 || unlink(server_response_file_name) == -1 ) {
+        exit_with_error();
+    }
 
     _exit(0);
 }
@@ -92,6 +93,11 @@ void main(int argc, char **argv) {
     int random;
     int buffer;
     int size;
+
+    // make sure all args were passed
+    if (argc < 5) {
+        exit_with_error();
+    }
 
     // handle response from server and set timeout
     signal(SIGUSR1, response_handler);
@@ -135,10 +141,14 @@ void main(int argc, char **argv) {
     write(server_input_file_fd, (const void*)(&buffer), sizeof(int));
 
     // close server input file
-    close(server_input_file_fd);
+    if ( close(server_input_file_fd) == -1) {
+        exit_with_error();
+    };
 
     // send signal to server
-    kill(ascii_to_integer(argv[1]), SIGUSR1);
+    if ( kill(ascii_to_integer(argv[1]), SIGUSR1) == -1) {
+        exit_with_error();
+    };
 
     // set timeout
     alarm(30);

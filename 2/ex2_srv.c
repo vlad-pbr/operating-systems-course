@@ -24,6 +24,11 @@ void integer_to_ascii(int integer, char* buffer) {
     }
 }
 
+void exit_with_error() {
+    write(1, "ERROR_FROM_EX2\n", 16);
+    _exit(1);
+}
+
 void timeout_handler(int sig) {
     write(1, "The server was closed because no service request was received for the last 60 seconds\n", 87);
     _exit(0);
@@ -50,7 +55,9 @@ void request_handler(int sig) {
         int answer;
 
         // open input file
-        server_input_file_fd = open(SERVER_INPUT_FILE_NAME, O_RDONLY);
+        if ( (server_input_file_fd = open(SERVER_INPUT_FILE_NAME, O_RDONLY)) == -1 ) {
+            exit_with_error();
+        };
 
         // read from input file
         read(server_input_file_fd, &client_pid, sizeof(int));
@@ -59,8 +66,9 @@ void request_handler(int sig) {
         read(server_input_file_fd, &second_number, sizeof(int));
 
         // delete input file
-        close(server_input_file_fd);
-        unlink(SERVER_INPUT_FILE_NAME);
+        if ( close(server_input_file_fd) == -1 || unlink(SERVER_INPUT_FILE_NAME) == -1) {
+            exit_with_error();
+        }
 
         // combine client output file name
         integer_to_ascii(client_pid, client_pid_postfix);
@@ -69,10 +77,14 @@ void request_handler(int sig) {
         answer = SOLVE(first_number, second_number, action);
         client_output_file_fd = open(client_output_file_name, O_WRONLY | O_CREAT, 0644);
         write(client_output_file_fd, (const void*)(&answer), sizeof(int));
-        close(client_output_file_fd);
+        if ( close(client_output_file_fd) == -1 ) {
+            exit_with_error();
+        }
 
         // signal client
-        kill(client_pid, SIGUSR1);
+        if ( kill(client_pid, SIGUSR1) == -1 ) {
+            exit_with_error();
+        }
 
         _exit(0);
     }
@@ -86,8 +98,9 @@ void main() {
 
     // remove input file if present
     if ( (server_input_file_fd = open(SERVER_INPUT_FILE_NAME, O_RDONLY)) != -1 ) {
-        close(server_input_file_fd);
-        unlink(SERVER_INPUT_FILE_NAME);
+        if ( close(server_input_file_fd) == -1 || unlink(SERVER_INPUT_FILE_NAME) == -1 ) {
+            exit_with_error();
+        }
     }
 
     // define signal handlers
