@@ -8,16 +8,14 @@
 
 #define SERVER_INPUT_FILE_NAME "to_srv"
 
-#define ACTION_TO_SIGNAL (int[]) { SIGUSR1, SIGUSR2, SIGSTKFLT, 4 }
-
 int ascii_to_integer(char* ascii) {
 
     // define variables
-    int size;
+    int size = 0;
     int result = 0;
 
     // get string length
-    for (size = 0; ascii[size] != '\0'; size++);
+    for (; ascii[size] != '\0'; size++);
 
     // calculate result
     for(int multiplier = 1; size != 0; size--, multiplier *= 10) {
@@ -27,8 +25,38 @@ int ascii_to_integer(char* ascii) {
     return result;
 }
 
+void integer_to_ascii(int integer, char* buffer) {
+
+    // define variables
+    int size = 0;
+
+    // get integer length
+    for(int i = integer; i != 0; i /= 10, size++);
+
+    // fill buffer with chars
+    buffer[size] = '\0';
+    for(; integer != 0; integer /= 10, size--) {
+        buffer[size-1] = (integer % 10) + 48;
+    }
+}
+
 void response_handler(int sig) {
-    printf("received response\n");
+
+    // define variables
+    int server_response_file_fd;
+    char server_response_file_name[10 + 7 + 1] = "to_client_"; // approx. 4 mil maximum PIDs on 64 bit systems
+    char *client_pid_postfix = server_response_file_name + 10;
+    int answer;
+
+    // combine server response file name
+    integer_to_ascii(getpid(), client_pid_postfix);
+
+    // read response and delete file
+    server_response_file_fd = open(server_response_file_name, O_RDONLY);
+    read(server_response_file_fd, &answer, sizeof(int));
+    printf("%d\n", answer);
+    close(server_response_file_fd);
+    remove(server_response_file_name);
 }
 
 void main(int argc, char **argv) {
@@ -39,7 +67,7 @@ void main(int argc, char **argv) {
     int buffer;
     int size;
 
-    // handle respose from client
+    // handle response from server
     signal(SIGUSR1, response_handler);
 
     // create server input file
