@@ -90,7 +90,6 @@ void response_handler(int sig) {
 void main(int argc, char **argv) {
 
     // define variables
-    int action = (int)(argv[3][0]) - 48;
     int server_input_file_fd;
     int random;
     int buffer;
