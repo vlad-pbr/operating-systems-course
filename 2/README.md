@@ -2,8 +2,8 @@
 
 Client - server achitecture using signals
 
-__Server__: Calculator that handles SIGUSR1 and reads from "to_srv" file in order to calculate the output
-__Client__: Writes the "to_srv" file based on given args and signals SIGUSR1 to server, prints response
+__Client__: Writes "to_srv" file based on given args and signals SIGUSR1 to server, waits for SIGUSR1 from server, reads response from "to_client_xxx" (where xxx is client PID).
+__Server__: Handles SIGUSR1 and reads from "to_srv" file in order to perform basic calculation, writes to a "to_client_xxx" file, then signals SIGUSR1 to client.
 
 ```bash
 
