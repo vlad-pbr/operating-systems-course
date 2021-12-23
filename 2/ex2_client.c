@@ -118,9 +118,6 @@ void main(int argc, char **argv) {
         exit_with_error();
     }
 
-    // create server input file
-    server_input_file_fd = open(SERVER_INPUT_FILE_NAME, O_WRONLY | O_CREAT, 0644);
-
     // write client pid
     buffer = getpid();
     write(server_input_file_fd, (const void*)(&buffer), sizeof(int));
