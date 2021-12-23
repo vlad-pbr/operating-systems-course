@@ -3,7 +3,8 @@
 Client - server achitecture using signals
 
 __Client__: Writes "to_srv" file based on given args and signals SIGUSR1 to server, waits for SIGUSR1 from server, reads response from "to_client_xxx" (where xxx is client PID).
-__Server__: Handles SIGUSR1 and reads from "to_srv" file in order to perform basic calculation, writes to a "to_client_xxx" file, then signals SIGUSR1 to client.
+
+__Server__: Handles SIGUSR1 and reads from "to_srv" file, performs a basic calculation, writes to a "to_client_xxx" file, then signals SIGUSR1 to client.
 
 ```bash
 
@@ -26,4 +27,6 @@ make run_all
 
 # kills any client/server processes still around
 make kill
+
+# pkill -9 ex2_ || true
 ```
