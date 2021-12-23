@@ -1,6 +1,6 @@
 
 kill:
-	pkill -9 ex2_srv.out || true
+	pkill -9 ex2_ || true
 
 run_server: kill
 	gcc ex2_srv.c -o ex2_srv.out

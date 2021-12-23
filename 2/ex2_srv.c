@@ -2,8 +2,6 @@
 
 #include <signal.h>
 #include <fcntl.h>
-
-#include <stdio.h>
 #include <unistd.h>
 
 #define SERVER_INPUT_FILE_NAME "to_srv"
@@ -62,7 +60,7 @@ void request_handler(int sig) {
 
         // delete input file
         close(server_input_file_fd);
-        remove(SERVER_INPUT_FILE_NAME);
+        unlink(SERVER_INPUT_FILE_NAME);
 
         // combine client output file name
         integer_to_ascii(client_pid, client_pid_postfix);
@@ -89,7 +87,7 @@ void main() {
     // remove input file if present
     if ( (server_input_file_fd = open(SERVER_INPUT_FILE_NAME, O_RDONLY)) != -1 ) {
         close(server_input_file_fd);
-        remove(SERVER_INPUT_FILE_NAME);
+        unlink(SERVER_INPUT_FILE_NAME);
     }
 
     // define signal handlers
