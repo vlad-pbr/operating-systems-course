@@ -40,6 +40,11 @@ void integer_to_ascii(int integer, char* buffer) {
     }
 }
 
+void timeout_handler(int sig) {
+    write(1, "Client closed because no response was received from the server for 30 seconds\n", 79);
+    _exit(1);
+}
+
 void response_handler(int sig) {
 
     // define variables
@@ -47,6 +52,9 @@ void response_handler(int sig) {
     char server_response_file_name[10 + 7 + 1] = "to_client_"; // approx. 4 mil maximum PIDs on 64 bit systems
     char *client_pid_postfix = server_response_file_name + 10;
     int answer;
+
+    // cancel timeout
+    alarm(0);
 
     // combine server response file name
     integer_to_ascii(getpid(), client_pid_postfix);
@@ -57,6 +65,8 @@ void response_handler(int sig) {
     printf("%d\n", answer);
     close(server_response_file_fd);
     remove(server_response_file_name);
+
+    _exit(0);
 }
 
 void main(int argc, char **argv) {
@@ -67,8 +77,9 @@ void main(int argc, char **argv) {
     int buffer;
     int size;
 
-    // handle response from server
+    // handle response from server and set timeout
     signal(SIGUSR1, response_handler);
+    signal(SIGALRM, timeout_handler);
 
     // create server input file
     server_input_file_fd = open(SERVER_INPUT_FILE_NAME, O_WRONLY | O_CREAT, 0644);
@@ -94,6 +105,9 @@ void main(int argc, char **argv) {
 
     // send signal to server
     kill(ascii_to_integer(argv[1]), SIGUSR1);
+
+    // set timeout
+    alarm(30);
 
     while(1);
 }

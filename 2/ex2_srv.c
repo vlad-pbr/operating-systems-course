@@ -26,7 +26,15 @@ void integer_to_ascii(int integer, char* buffer) {
     }
 }
 
+void timeout_handler(int sig) {
+    write(1, "The server was closed because no service request was received for the last 60 seconds\n", 87);
+    _exit(0);
+}
+
 void request_handler(int sig) {
+
+    // reset alarm
+    alarm(60);
 
     // child
     if ( (fork()) == 0 ) {
@@ -67,6 +75,8 @@ void request_handler(int sig) {
 
         // signal client
         kill(client_pid, SIGUSR1);
+
+        _exit(0);
     }
 
 }
@@ -82,11 +92,15 @@ void main() {
         remove(SERVER_INPUT_FILE_NAME);
     }
 
-    // define request handler for signal
+    // define signal handlers
     signal(SIGUSR1, request_handler);
+    signal(SIGALRM, timeout_handler);
+
+    // ignore SIGCHLD so children are silently reaped
+    signal(SIGCHLD, SIG_IGN);
+
+    // set timeout
+    alarm(60);
 
     while(1);
-
-    // printf("The server was closed because no service request was received for the last 60 seconds\n");
-
 }
