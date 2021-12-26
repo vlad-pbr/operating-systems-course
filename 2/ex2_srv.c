@@ -14,6 +14,20 @@ void integer_to_ascii(int integer, char* buffer) {
     // define variables
     int size = 0;
 
+    // account for 0
+    if (integer == 0) {
+        buffer[0] = '0';
+        buffer[1] = '\0';
+        return;
+    }
+    
+    // account for negative integer
+    if (integer < 0) {
+        integer *= -1;
+        buffer[0] = '-';
+        size++;
+    }
+
     // get integer length
     for(int i = integer; i != 0; i /= 10, size++);
 

@@ -12,22 +12,49 @@ int ascii_to_integer(char* ascii) {
     // define variables
     int size = 0;
     int result = 0;
+    int neg_multiplier = 1;
+    char *ascii_pointer = ascii;
+
+    // account for 0
+    if (ascii_pointer[0] == '0' && ascii_pointer[1] == '\0') {
+        return 0;
+    }
+
+    // account for negative integer
+    if (ascii_pointer[0] == '-') {
+        ascii_pointer++;
+        neg_multiplier = -1;
+    }
 
     // get string length
-    for (; ascii[size] != '\0'; size++);
+    for (; ascii_pointer[size] != '\0'; size++);
 
     // calculate result
     for(int multiplier = 1; size != 0; size--, multiplier *= 10) {
-        result += (ascii[size-1] - 48) * multiplier;
+        result += (ascii_pointer[size-1] - 48) * multiplier;
     }
 
-    return result;
+    return result * neg_multiplier;
 }
 
 void integer_to_ascii(int integer, char* buffer) {
 
     // define variables
     int size = 0;
+
+    // account for 0
+    if (integer == 0) {
+        buffer[0] = '0';
+        buffer[1] = '\0';
+        return;
+    }
+    
+    // account for negative integer
+    if (integer < 0) {
+        integer *= -1;
+        buffer[0] = '-';
+        size++;
+    }
 
     // get integer length
     for(int i = integer; i != 0; i /= 10, size++);
@@ -56,7 +83,7 @@ void response_handler(int sig) {
     char server_response_file_name[10 + 7 + 1] = "to_client_"; // approx. 4 mil maximum PIDs on 64 bit systems
     char *client_pid_postfix = server_response_file_name + 10;
     int answer;
-    char answer_string[10 + 1]; // max 10 decimals in 32 bit int
+    char answer_string[10 + 1 + 1]; // max 10 decimals in 32 bit int + negative sign + zero termination
     int size;
 
     // cancel timeout
