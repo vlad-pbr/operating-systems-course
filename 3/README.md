@@ -10,7 +10,7 @@ Given a list of processes with their arrival and burst times, calculate the aver
 ```bash
 
 # compiles and runs calculation using 5 different input files
-make run_all
+make run
 
 # gcc main.c -o main.out
 # for INPUT in input1.txt input2.txt input3.txt input4.txt input5.txt; do \
