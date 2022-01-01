@@ -272,7 +272,7 @@ float RR_TA(struct Process *processes, int size, int time_quantum) {
         for (int i = 0; i < size; i++) {
 
             // add process that arrived on current tick to ready queue
-            if (processes[i].arrivalTime == tick) {
+            if (processes[i].arrivalTime == tick && processes_completion[i] < processes[i].computationTime + 1) {
                 ready_queue[ready_queue_tail] = i;
                 ready_queue_tail = ++ready_queue_tail % ready_queue_size;
             }
@@ -281,7 +281,7 @@ float RR_TA(struct Process *processes, int size, int time_quantum) {
 
         // advance clock
         if (ready_queue[ready_queue_head] == -1 || 
-           (ready_queue[ready_queue_head] != -1 && processes[ready_queue[ready_queue_head] == -1].computationTime != 0)) {
+           (ready_queue[ready_queue_head] != -1 && processes[ready_queue[ready_queue_head]].computationTime != 0)) {
                tick++;
                round = ++round % time_quantum;
                if (ready_queue[ready_queue_head] != -1 && processes[ready_queue[ready_queue_head] == -1].computationTime != 0) {
@@ -295,6 +295,7 @@ float RR_TA(struct Process *processes, int size, int time_quantum) {
             
             // if process was completed - dequeue and mark
             if (processes[ready_queue[ready_queue_head]].computationTime <= processes_completion[ready_queue[ready_queue_head]]) {
+                processes_completion[ready_queue[ready_queue_head]]++;
                 completed_amt++;
                 avg_turnaround += tick - processes[ready_queue[ready_queue_head]].arrivalTime;
                 round = 0;
@@ -348,7 +349,7 @@ float SJF_P_TA(struct Process *processes, int size) {
         for (int i = 0; i < size; i++) {
 
             // add process that arrived on current tick to ready queue
-            if (processes[i].arrivalTime == tick) {
+            if (processes[i].arrivalTime == tick && processes_completion[i] < processes[i].computationTime + 1) {
                 ready_queue[i] = 1;
                 compare = 1;
             }
@@ -387,6 +388,7 @@ float SJF_P_TA(struct Process *processes, int size) {
 
             // if finished computing process - mark
             if (processes_completion[ready_queue_pos] >= processes[ready_queue_pos].computationTime) {
+                processes_completion[ready_queue_pos]++;
                 completed_amt++;
                 avg_turnaround += tick - processes[ready_queue_pos].arrivalTime;
                 ready_queue[ready_queue_pos] = -1;
